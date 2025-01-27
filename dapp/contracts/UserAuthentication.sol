@@ -4,25 +4,44 @@ pragma solidity ^0.8.0;
 contract UserAuthentication {
     struct User {
         string username;
-        string passwordHash;  // Store hashed password for security
+        bytes32 passwordHash;
     }
     
-    mapping(address => User) public users;
+    User[] private users;
+
+    mapping(address => User) public usersMapping;
 
     // Register a new user
-    function register(string memory username, string memory passwordHash) public {
-        require(bytes(username).length > 0, "Username is required");
-        require(bytes(passwordHash).length > 0, "Password is required");
+    function register(string memory _username, bytes32 _passwordHash) public {
+        require(bytes(_username).length > 0, "Username is required");
+        require(_passwordHash != 0, "Password is required");
 
-        users[msg.sender] = User(username, passwordHash);
+        users.push(User({
+            username: _username,
+            passwordHash: _passwordHash
+        }));
+        
+        usersMapping[msg.sender] = User({
+            username: _username,
+            passwordHash: _passwordHash
+        });
     }
 
-    // Validate user credentials (just a simple example)
-    function validateUser(string memory username, string memory passwordHash) public view returns (bool) {
-        if (keccak256(abi.encodePacked(users[msg.sender].username)) == keccak256(abi.encodePacked(username)) &&
-            keccak256(abi.encodePacked(users[msg.sender].passwordHash)) == keccak256(abi.encodePacked(passwordHash))) {
-            return true;
-        }
-        return false;
+    // Update the validation function to use bytes32 for password
+    function validateUser(string memory _username, bytes32 _passwordHash) public view returns (bool) {
+        User storage user = usersMapping[msg.sender];
+        
+        return (keccak256(abi.encodePacked(user.username)) == keccak256(abi.encodePacked(_username)) &&
+                user.passwordHash == _passwordHash);
+    }
+
+    function getUserCount() public view returns (uint256) {
+        return users.length;
+    }
+
+    function getUser(uint256 index) public view returns (string memory username, bytes32 passwordHash) {
+        require(index < users.length, "User index out of bounds");
+        User storage user = users[index];
+        return (user.username, user.passwordHash);
     }
 }

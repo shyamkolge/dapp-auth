@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Web3 from 'web3';
 import UserAuthentication from '../../dapp/build/contracts/UserAuthentication.json';
 import './App.css';
@@ -13,7 +14,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('signin'); // 'signin' or 'signup'
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     // Check if already connected
     if (window.ethereum) {
@@ -107,6 +109,7 @@ function App() {
         setStatusMessage('Login successful!');
         setUsername('');
         setPassword('');
+        navigate('/home');
       } else {
         setStatusMessage('Invalid credentials.');
       }
@@ -176,6 +179,10 @@ function App() {
                 {isLoading ? 'Processing...' : (activeTab === 'signin' ? 'Sign In' : 'Sign Up')}
               </button>
             </form>
+
+            <div className="admin-link">
+              <Link to="/admin">Go to Admin Dashboard</Link>
+            </div>
           </>
         )}
 
